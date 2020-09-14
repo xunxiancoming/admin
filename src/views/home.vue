@@ -1,32 +1,45 @@
 <template>
   <div>
     <el-container style="height: 100vh; border: 1px solid #eee">
-      <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-        <el-menu :default-openeds="['1', '3']">
-          <el-submenu index="1">
-            <template slot="title">
-              <i class="el-icon-message"></i>导航一
-            </template>
-            <el-menu-item index="1-1">shangp</el-menu-item>
-            <el-menu-item index="1-2">选项2</el-menu-item>
-          </el-submenu>
-        </el-menu>
-      </el-aside>
+      <el-header style="text-align: right; font-size: 12px">
+        <el-dropdown>
+          <i class="el-icon-setting" style="margin-right: 15px"></i>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>查看</el-dropdown-item>
+            <el-dropdown-item>新增</el-dropdown-item>
+            <el-dropdown-item @click.native="logout">退出</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <span>王小虎</span>
+      </el-header>
 
       <el-container>
-        <el-header style="text-align: right; font-size: 12px">
-          <el-dropdown>
-            <i class="el-icon-setting" style="margin-right: 15px"></i>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>查看</el-dropdown-item>
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item @click.native="logout">退出</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <span>王小虎</span>
-        </el-header>
-
-        <el-main></el-main>
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+          <el-menu
+            unique-opened
+            :default-openeds="[activeMenu]"
+            router
+            v-for="menu in menuLists"
+            :key="menu.id"
+            @open="handelOpenMenu(menu.id)"
+            @close="handelCloseMenu(menu.id)"
+          >
+            <el-submenu :index="menu.id+''">
+              <template slot="title">
+                <i class="el-icon-message"></i>
+                {{menu.authName}}
+              </template>
+              <el-menu-item
+                :index="item.path"
+                v-for="item in menu.children"
+                :key="item.id"
+              >{{item.authName}}</el-menu-item>
+            </el-submenu>
+          </el-menu>
+        </el-aside>
+        <el-main>
+          <router-view></router-view>
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -35,17 +48,42 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      menuLists: [],
+      activeMenu: "",
+    };
+  },
+  created() {
+    this.getMenuData();
+  },
+  mounted() {
+    this.getOpenedMenuId();
   },
   methods: {
     logout() {
-      console.log("1");
       window.sessionStorage.clear();
       this.$message({
         message: "退出成功！",
         type: "success",
       });
       this.$router.push("/login");
+    },
+    async getMenuData() {
+      let res = await this.$http.get("menus");
+      if (res.data.meta.status === 200) {
+        this.menuLists = res.data.data;
+      }
+    },
+    handelOpenMenu(id) {
+      this.activeMenu = id + "";
+      window.sessionStorage.setItem("openmenuid", id + "");
+    },
+    handelCloseMenu() {
+      this.activeMenu = "";
+      window.sessionStorage.setItem("openmenuid", "");
+    },
+    getOpenedMenuId() {
+      this.activeMenu = window.sessionStorage.getItem("openmenuid");
     },
   },
 };

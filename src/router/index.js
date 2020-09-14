@@ -11,7 +11,17 @@ const routes = [{
   component: route('login')
 }, {
   path: '/home',
-  component: route('home')
+  component: route('home'),
+  children: [{
+    path: '/users',
+    component: route('user/userlist')
+  }, {
+    path: '/rights',
+    component: route('authrization/authlist')
+  }, {
+    path: '/roles',
+    component: route('authrization/rolelist')
+  }]
 }]
 
 const router = new VueRouter({

@@ -36,6 +36,7 @@ export default {
       this.$refs[login].validate(async (valid) => {
         if (valid) {
           let res = await this.$http.post("login", this.user);
+          console.log(res);
           if (res.data.meta.status == 200) {
             window.sessionStorage.setItem("token", res.data.data.token);
             this.$message({
